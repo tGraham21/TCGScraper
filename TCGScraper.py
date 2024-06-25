@@ -18,7 +18,16 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets",
 
 # The ID and range of the spreadsheet
 SPREADSHEET_ID = '1W13k9LgPpaf806bIOwjhnAhsi0QQ77sJ6IJZ0vgq5K0'
-RANGE_NAME = 'Sheet1!A1:A6'  # Adjust range as needed
+RANGE_NAME = 'Sheet1'  # Adjust range as needed
+
+def col_index_to_letter(index):
+    letter = ''
+    while index > 0:
+        index -= 1
+        letter = chr(index % 26 + 65) + letter
+        index //= 26
+    return letter
+
 
 def main():
     creds = Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
@@ -55,11 +64,20 @@ def main():
 
         writeData = []
 
+
         for d in data.values():
-            writeData.append([d.MarketPrice, d.PrevSales[0], d.PrevSales[1], d.PrevSales[2]])
+            writeData.append([d.MarketPrice])
 
-        worksheet.update(writeData, 'B1')
+        if values and values[0]:
+            next_empty_col_index = len(values[0]) + 1
+        else:
+            next_empty_col_index = 1
 
+        next_empty_col_letter = col_index_to_letter(next_empty_col_index)
+        # WRITE_RANGE = f'Sheet1!{next_empty_col_letter}1:{next_empty_col_letter}'
+        start_index = next_empty_col_letter + '1'
+
+        worksheet.update(writeData, start_index)
 
     except HttpError as err:
         print(err)

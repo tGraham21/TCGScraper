@@ -49,13 +49,13 @@ class PriceScraper:
                 if(price == "-"):
                     MarketPrice = None
                 else:
-                    MarketPrice = float(price[2:])
+                    MarketPrice = float(price[1:])
 
                 saleElems= self.driver.find_elements(By.XPATH, "//span[contains(@class, 'price') and @data-v-0d2a5514]")
 
                 PrevSales = []
                 for elem in saleElems:
-                    PrevSales.append(float(elem.text[2:]))
+                    PrevSales.append(float(elem.text[1:]))
 
             except selenium.common.exceptions.NoSuchElementException as e:
                 raise Exception(e)
