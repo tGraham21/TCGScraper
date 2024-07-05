@@ -1,6 +1,9 @@
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+# from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import selenium.common.exceptions
 
 import time
@@ -23,14 +26,15 @@ class PriceScraper:
         self.urls = urls
 
         if(options == None):
-            chrome_options = webdriver.ChromeOptions()
-            chrome_options.add_argument('--ignore-certificate-errors')
-            chrome_options.add_argument('--ignore-ssl-errors')
-            chrome_options.add_argument('--headless=new')
+            firefox_options = webdriver.FirefoxOptions()
+            #chrome_options = webdriver.ChromeOptions()
+            #chrome_options.add_argument('--ignore-certificate-errors')
+            #chrome_options.add_argument('--ignore-ssl-errors')
+            #chrome_options.add_argument('--headless=new')
         else:
-            chrome_options = options
+            firefox_options = options
            
-        self.driver = webdriver.Chrome(options=chrome_options)
+        self.driver = webdriver.Firefox(options=firefox_options)
     
     # returns mapping of url to associated PriceData
     def GetPriceData(self):
@@ -39,12 +43,13 @@ class PriceScraper:
         for url in self.urls:
 
             self.driver.get(url)
-            time.sleep(2)
+            time.sleep(10)
             title = self.driver.title
 
             try:
-                # hard coded. Will need to update if the website changes
-                price = self.driver.find_element(By.XPATH, "//span[contains(@class, 'price') and @data-v-5fcceba6]").text
+                # hard coded. Will wait up to 15s for the element to load
+                price = WebDriverWait(self.driver, 15).until(
+                    EC.presence_of_element_located((By.XPATH, "//span[contains(@class, 'price') and @data-v-5fcceba6]"))).text
 
                 if(price == "-"):
                     MarketPrice = None

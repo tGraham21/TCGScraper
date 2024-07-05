@@ -1,5 +1,6 @@
 import os.path
 import gspread
+import datetime
 
 from google.auth.transport.requests import Request
 from google.oauth2.service_account import Credentials
@@ -48,7 +49,7 @@ def main():
         # Request data from the specified range
         values = result.get('values', [])
 
-        urls = [url[0]  for url in values]
+        urls = [url[0]  for url in values if url[0]]
 
         scraper = PriceScraper(urls)
         data = scraper.GetPriceData()
@@ -64,9 +65,11 @@ def main():
 
         writeData = []
 
-
         for d in data.values():
             writeData.append([d.MarketPrice])
+
+        time = datetime.datetime.now()
+        writeData.append([time.strftime("%Y-%m-%d %H:%M:%S")])
 
         if values and values[0]:
             next_empty_col_index = len(values[0]) + 1
