@@ -9,6 +9,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from PriceScraper import PriceScraper, PriceData
+from JSONParser import JSONParser
 
 # Path to your service account key file
 SERVICE_ACCOUNT_FILE = 'service-key.json'
@@ -40,47 +41,50 @@ def main():
         # Call the Sheets API
         sheet = service.spreadsheets()
         
-        result = (
-            sheet.values()
-            .get(spreadsheetId=SPREADSHEET_ID, range=RANGE_NAME)
-            .execute()
-            )
+        json_urls = JSONParser.GetPages("set_sheetids.json")
 
-        # Request data from the specified range
-        values = result.get('values', [])
+        for id in json_urls.values():
+            result = (
+                sheet.values()
+                .get(spreadsheetId=id, range=RANGE_NAME)
+                .execute()
+                )
 
-        urls = [url[0]  for url in values if url[0]]
+            # Request data from the specified range
+            values = result.get('values', [])
 
-        scraper = PriceScraper(urls)
-        data = scraper.GetPriceData()
-        scraper.Close()
+            urls = [url[0]  for url in values if url[0]]
 
-        for d in data.values():
-          print(d)
+            scraper = PriceScraper(urls)
+            data = scraper.GetPriceData()
+            scraper.Close()
 
-        client = gspread.authorize(creds)
+            for d in data.values():
+              print(d)
 
-        spreadsheet = client.open_by_key(SPREADSHEET_ID)
-        worksheet = spreadsheet.sheet1
+            client = gspread.authorize(creds)
 
-        writeData = []
+            spreadsheet = client.open_by_key(id)
+            worksheet = spreadsheet.sheet1
 
-        for d in data.values():
-            writeData.append([d.MarketPrice])
+            writeData = []
 
-        time = datetime.datetime.now()
-        writeData.append([time.strftime("%Y-%m-%d %H:%M:%S")])
+            for d in data.values():
+                writeData.append([d.MarketPrice])
 
-        if values and values[0]:
-            next_empty_col_index = len(values[0]) + 1
-        else:
-            next_empty_col_index = 1
+            time = datetime.datetime.now()
+            writeData.append([time.strftime("%Y-%m-%d %H:%M:%S")])
 
-        next_empty_col_letter = col_index_to_letter(next_empty_col_index)
-        # WRITE_RANGE = f'Sheet1!{next_empty_col_letter}1:{next_empty_col_letter}'
-        start_index = next_empty_col_letter + '1'
+            if values and values[0]:
+                next_empty_col_index = len(values[0]) + 1
+            else:
+                next_empty_col_index = 1
 
-        worksheet.update(writeData, start_index)
+            next_empty_col_letter = col_index_to_letter(next_empty_col_index)
+            # WRITE_RANGE = f'Sheet1!{next_empty_col_letter}1:{next_empty_col_letter}'
+            start_index = next_empty_col_letter + '1'
+
+            worksheet.update(writeData, start_index)
 
     except HttpError as err:
         print(err)

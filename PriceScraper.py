@@ -9,7 +9,6 @@ import selenium.common.exceptions
 import time
 from dataclasses import dataclass
 
-
 # Should let the user pass in field and the associated xpath instead of this
 @dataclass
 class PriceData:
@@ -27,6 +26,7 @@ class PriceScraper:
 
         if(options == None):
             firefox_options = webdriver.FirefoxOptions()
+            firefox_options.add_argument("-headless")
             #chrome_options = webdriver.ChromeOptions()
             #chrome_options.add_argument('--ignore-certificate-errors')
             #chrome_options.add_argument('--ignore-ssl-errors')
