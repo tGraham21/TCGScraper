@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import selenium.common.exceptions
+import statistics
 
 import time
 from dataclasses import dataclass
@@ -13,7 +14,7 @@ from dataclasses import dataclass
 @dataclass
 class PriceData:
     Title: str
-    MarketPrice: float #As defined by TCGPlayer
+    MarketPrice: str #As defined by TCGPlayer
     PrevSales: list
 
 
@@ -54,13 +55,17 @@ class PriceScraper:
                 if(price == "-"):
                     MarketPrice = None
                 else:
-                    MarketPrice = float(price[1:])
+                    MarketPrice = str(price[1:])
 
                 saleElems= self.driver.find_elements(By.XPATH, "//span[contains(@class, 'price') and @data-v-0d2a5514]")
 
                 PrevSales = []
                 for elem in saleElems:
-                    PrevSales.append(float(elem.text[1:]))
+                    PrevSales.append(str(elem.text[1:]))
+                
+                if MarketPrice == None:
+                    MarketPrice = statistics.median(PrevSales)
+                    MarketPrice += "*"
 
             except selenium.common.exceptions.NoSuchElementException as e:
                 raise Exception(e)
