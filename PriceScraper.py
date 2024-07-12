@@ -1,6 +1,6 @@
 from selenium import webdriver
-# from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.chrome.options import Options
+# from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -26,16 +26,16 @@ class PriceScraper:
         self.urls = urls
 
         if(options == None):
-            firefox_options = webdriver.FirefoxOptions()
-            firefox_options.add_argument("-headless")
-            #chrome_options = webdriver.ChromeOptions()
-            #chrome_options.add_argument('--ignore-certificate-errors')
-            #chrome_options.add_argument('--ignore-ssl-errors')
-            #chrome_options.add_argument('--headless=new')
-        else:
-            firefox_options = options
+            # irefox_options = webdriver.FirefoxOptions()
+            # firefox_options.add_argument("-headless")
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options.add_argument('--ignore-certificate-errors')
+            chrome_options.add_argument('--ignore-ssl-errors')
+            chrome_options.add_argument('--headless=new')
+        #else:
+            #firefox_options = options
            
-        self.driver = webdriver.Firefox(options=firefox_options)
+        self.driver = webdriver.Chrome(options=chrome_options)
     
     # returns mapping of url to associated PriceData
     def GetPriceData(self):
@@ -49,7 +49,7 @@ class PriceScraper:
 
             try:
                 # hard coded. Will wait up to 15s for the element to load
-                price = WebDriverWait(self.driver, 15).until(
+                price = WebDriverWait(self.driver, 30).until(
                     EC.presence_of_element_located((By.XPATH, "//span[contains(@class, 'price') and @data-v-5fcceba6]"))).text
 
                 if(price == "-"):
